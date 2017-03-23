@@ -13,8 +13,9 @@ from pprint import pprint
 from time import time
 from word2vec_scripts.config import DATA_DIR
 from pandas.io.tests.parser import quoting
+from nltk.corpus.reader.reviews import Review
 
-def review_to_words(review_raw):
+def review_to_words(review_raw, remove_stop_words=True, remove_numbers=True):
 #GOAL: Convert raw string of review into a list of words (excluding all the stop words)
 #input: raw review data
 #output: string of words
@@ -23,19 +24,25 @@ def review_to_words(review_raw):
     review_text = BeautifulSoup(review_raw, 'html.parser').get_text()
     
     #Eliminate non-alphabetical characters
-    review_letters_only = re.sub(r"[^A-Za-z]", " ",review_text)
-    
-    #Convert characters to lower case and split review string into set of words
-    words = review_letters_only.lower().split()
+    if remove_numbers:
+        review_letters_only = re.sub(r"[^A-Za-z]", " ", review_text)
+        #Convert characters to lower case and split review string into set of words
+        words = review_letters_only.lower().split()
+    else:
+        review_letters_and_numbers = re.sub(r"[^A-Za-z0-9]"," ", review_text)
+        #Convert characters to lower case and split review string into set of words
+        words = review_letters_only.lower().split()
     
     #Remove stop words that hold less meaning - a, an, etc
     #download python in-built words list which also includes stopwords list
     # nltk.download('all') #run this line only during the first execution
     
-    #store stop words list as set
-    stop_words = set(stopwords.words("english"))
-    #Eliminate stop words
-    meaningful_words = [word for word in words if word not in stop_words]
+    #Eliminate Stop Words
+    if remove_stop_words:
+        #store stop words list as set
+        stop_words = set(stopwords.words("english"))
+        #Eliminate stop words
+        meaningful_words = [word for word in words if word not in stop_words]
     
     #Join all the words into a string
     processed_review = " ".join(meaningful_words)
@@ -168,5 +175,5 @@ def main():
     # Write output to CSV file
     output.to_csv(os.path.join(DATA_DIR,"Bag_of_Words_model.csv"), index=False, quoting=3)
     
-main()   
+# main()   
     
